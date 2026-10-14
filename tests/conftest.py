@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 import os
 from collections.abc import Iterator
 
@@ -22,3 +23,13 @@ def _isolated_settings(
     get_settings.cache_clear()
     yield
     get_settings.cache_clear()
+
+
+@pytest.fixture(autouse=True)
+def _reset_package_logger() -> Iterator[None]:
+    """Drop handlers bound to per-test streams (e.g. captured stderr) after each test."""
+    yield
+    logger = logging.getLogger("fraud_risk")
+    for handler in list(logger.handlers):
+        logger.removeHandler(handler)
+    logger.propagate = True
