@@ -61,3 +61,28 @@ Dataset source: local `dataset.zip` containing `creditcard.csv` (150,828,752 byt
   or ordering issues. Report written to Git-ignored `reports/data_quality.json`.
 - **Limitations:** duplicates are reported, not removed (by design); handled in Phase 03 docs.
 - **Status:** TESTED → READY_FOR_REVIEW
+
+## Phase 03 — Preprocessing Pipeline
+
+- **Implementation branch:** `phase/03-preprocessing` (base: `phase/test-02-data-validation` @ `1749bcc`)
+- **Test branch:** `phase/test-03-preprocessing` (base: `phase/03-preprocessing` @ `561f7b3`)
+- **Implementation commits:** `561f7b3` feat: add leakage-safe splitting and configurable preprocessing
+  pipeline; `453ec92` fix: stop split CLI from overwriting split metadata with the command payload
+- **Test commits:** `e42a427` test: cover splitting/preprocessing leakage and CLI (2 tests expose
+  defect); `b707ff7` merge of the implementation fix into the test branch
+- **Defect found by the test branch:** `fraud-risk split --output X` wrote split metadata to `X`,
+  then the generic CLI writer overwrote `X` with the command payload. Two T03 tests failed
+  (`KeyError: 'seed'`). The failing tests were committed as evidence, the fix was made on the
+  implementation branch (`453ec92`, `--output` now maps to `metadata_output`), and the fix was
+  merged into the test branch (no rebase, no history rewrite). Tests pass afterwards.
+- **Files:** `src/fraud_risk/data/{splitting,prepare}.py`, `src/fraud_risk/features/preprocessing.py`,
+  CLI `split`, `pyproject.toml` (scikit-learn, joblib, mypy overrides), `docs/validation-strategy.md`,
+  `tests/unit/test_splitting_preprocessing.py`, `tests/unit/test_preprocessing_leakage.py` (test branch)
+- **Commands and results (test branch, after fix):** `python -m pytest` → 176 passed;
+  `ruff check .` → pass; `ruff format --check .` → pass; `mypy src` → no issues in 18 files;
+  `git diff --check` → clean.
+- **Dataset:** real splits verified (seed 42). Stratified grouped: train 170,894 / 294 frauds,
+  validation 56,965 / 102, test 56,948 / 96. Temporal: train 0.211 %, validation 0.100 %,
+  test 0.132 % fraud rate. Only metadata written (`reports/split_metadata.json`, Git-ignored).
+- **Limitations:** `hour_cyclical` assumes the window starts at midnight (undocumented by source).
+- **Status:** TESTED → READY_FOR_REVIEW
