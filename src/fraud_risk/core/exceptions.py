@@ -35,6 +35,24 @@ class DataError(FraudRiskError):
     code = "DATA_ERROR"
 
 
+class DatasetNotFoundError(DataError):
+    """The configured dataset file does not exist or is not a regular file."""
+
+    code = "DATA_NOT_FOUND"
+
+
+class DataReadError(DataError):
+    """The dataset file exists but cannot be read or parsed."""
+
+    code = "DATA_UNREADABLE"
+
+
+class SchemaError(DataError):
+    """The dataset structure (columns, types, target domain) violates the expected schema."""
+
+    code = "DATA_SCHEMA_INVALID"
+
+
 class ModelError(FraudRiskError):
     """A model or model artifact cannot be trained, loaded, or used."""
 

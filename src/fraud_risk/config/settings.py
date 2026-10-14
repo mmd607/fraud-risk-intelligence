@@ -55,6 +55,7 @@ class Settings(BaseSettings):
     data_dir: Path = Path("data")
     artifacts_dir: Path = Path("artifacts")
     reports_dir: Path = Path("reports")
+    dataset_path: Path = Path("data/raw/creditcard.csv")
 
     @field_validator("log_level")
     @classmethod

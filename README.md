@@ -47,6 +47,8 @@ fast with a `ConfigurationError` that names the variable but never echoes its va
 src/fraud_risk/        reusable package code (typed, py.typed marker)
   config/              settings
   core/                domain exceptions, structured logging
+  data/                schema, ingestion
+  cli/                 `fraud-risk` command-line entry point
 tests/unit/            fast deterministic unit tests
 tests/integration/     cross-module tests on synthetic fixtures
 docs/                  architecture and design documentation
@@ -54,6 +56,15 @@ docs/execution/        phase execution log, status, decisions, blockers
 ```
 
 See [`docs/architecture.md`](docs/architecture.md) for the design overview.
+
+## Dataset
+
+Download `creditcard.csv` manually from Kaggle and place it at `data/raw/creditcard.csv`
+(see [`docs/data.md`](docs/data.md)). Then:
+
+```bash
+fraud-risk ingest            # structural checks + aggregate metadata as JSON
+```
 
 ## Data and artifacts
 

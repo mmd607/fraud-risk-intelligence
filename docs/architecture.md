@@ -23,13 +23,16 @@ dashboard → release hygiene.
 - **Local artifacts only.** Data, models, reports, and tracking stores are written to Git-ignored
   directories (`data/`, `artifacts/`, `reports/`).
 
-## Module map (Phase 00)
+## Module map
 
 | Module | Responsibility |
 |---|---|
 | `fraud_risk.config.settings` | `Settings`, `load_settings()`, cached `get_settings()` |
 | `fraud_risk.core.exceptions` | `FraudRiskError` hierarchy with stable error codes |
 | `fraud_risk.core.logging` | JSON/console formatters, redaction, `configure_logging`, `log_event` |
+| `fraud_risk.data.schema` | Column constants; `FEATURE_COLUMNS` excludes the target |
+| `fraud_risk.data.ingestion` | `load_transactions()` structural checks + `DatasetMetadata` |
+| `fraud_risk.cli.main` | `fraud-risk` CLI (`ingest`, ...) |
 
 Later phases extend this table as modules are added.
 
@@ -39,6 +42,9 @@ Later phases extend this table as modules are added.
 FraudRiskError (FRAUD_RISK_ERROR)
 ├── ConfigurationError (CONFIGURATION_ERROR)
 ├── DataError (DATA_ERROR)
+│   ├── DatasetNotFoundError (DATA_NOT_FOUND)
+│   ├── DataReadError (DATA_UNREADABLE)
+│   └── SchemaError (DATA_SCHEMA_INVALID, plus specific DATA_* codes)
 ├── ModelError (MODEL_ERROR)
 └── DependencyUnavailableError (DEPENDENCY_UNAVAILABLE)
 ```
