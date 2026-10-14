@@ -135,3 +135,20 @@ Dataset source: local `dataset.zip` containing `creditcard.csv` (150,828,752 byt
   Model id `hist_gradient_boosting-20261014t050441`.
 - **Limitations:** HGB and XGBoost are within CV noise of each other; single split; uncalibrated scores.
 - **Status:** TESTED → READY_FOR_REVIEW
+
+## Phase 06 — Anomaly Detection Track
+
+- **Implementation branch:** `phase/06-anomaly-detection` (base: `phase/test-05-advanced-models` @ `88695a0`)
+- **Test branch:** `phase/test-06-anomaly-detection` (base: `phase/06-anomaly-detection`)
+- **Implementation commit:** `e0005d1` feat: add isolation-forest anomaly track with label-isolated fitting and ranking evaluation
+- **Test commit:** `e0e047b` test: cover anomaly label isolation, score semantics, determinism, and CLI
+- **Files:** `src/fraud_risk/anomaly/{detectors,evaluation}.py`, `src/fraud_risk/training/anomaly.py`,
+  CLI `train-anomaly`, `docs/anomaly-detection.md`, `tests/unit/test_anomaly.py`,
+  `tests/unit/test_anomaly_contract.py` (test branch)
+- **Commands and results (test branch):** `python -m pytest` → 268 passed; `ruff check .` → pass;
+  `ruff format --check .` → pass; `mypy src` → no issues in 31 files; `git diff --check` → clean.
+- **Real-data run:** Isolation Forest (200 trees, seed 42). Unsupervised (`fit_on=all`, 170,894 rows):
+  validation AP 0.2629, **test AP 0.1291**, test ROC-AUC 0.9417, test P@100 0.27 / R@100 0.281.
+  Legitimate-only (label-informed): test AP 0.1095. Supervised reference (Phase 05): 0.8163.
+- **Limitations:** anomaly ≠ fraud; not combined with supervised scores in this phase.
+- **Status:** TESTED → READY_FOR_REVIEW

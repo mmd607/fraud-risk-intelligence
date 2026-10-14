@@ -10,7 +10,7 @@ Status labels: `NOT_STARTED`, `IN_PROGRESS`, `BLOCKED`, `IMPLEMENTED`, `TESTED`,
 | 03 | Preprocessing Pipeline | `phase/03-preprocessing` | `phase/test-03-preprocessing` | READY_FOR_REVIEW |
 | 04 | Baseline Classification | `phase/04-baseline-model` | `phase/test-04-baseline-model` | READY_FOR_REVIEW |
 | 05 | Advanced Imbalanced-Learning Models | `phase/05-advanced-models` | `phase/test-05-advanced-models` | READY_FOR_REVIEW |
-| 06 | Anomaly Detection Track | `phase/06-anomaly-detection` | `phase/test-06-anomaly-detection` | NOT_STARTED |
+| 06 | Anomaly Detection Track | `phase/06-anomaly-detection` | `phase/test-06-anomaly-detection` | READY_FOR_REVIEW |
 | 07 | Risk Scoring and Decision Engine | `phase/07-risk-engine` | `phase/test-07-risk-engine` | NOT_STARTED |
 | 08 | Explainability | `phase/08-explainability` | `phase/test-08-explainability` | NOT_STARTED |
 | 09 | Experiment Tracking and Model Registry | `phase/09-model-registry` | `phase/test-09-model-registry` | NOT_STARTED |
