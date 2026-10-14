@@ -27,6 +27,7 @@ import pandas as pd
 from fastapi import Depends, FastAPI, Header, Query, Request, Response
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from fraud_risk import __version__
 from fraud_risk.api.schemas import (
@@ -94,6 +95,11 @@ def _install_handlers(app: FastAPI) -> None:
             for item in error.errors()
         ]  # deliberately excludes the offending input values
         return _error(request, 422, "REQUEST_INVALID", "Request validation failed.", details)
+
+    @app.exception_handler(StarletteHTTPException)
+    async def _http(request: Request, error: StarletteHTTPException) -> JSONResponse:
+        code = {404: "NOT_FOUND", 405: "METHOD_NOT_ALLOWED"}.get(error.status_code, "HTTP_ERROR")
+        return _error(request, error.status_code, code, str(error.detail))
 
     @app.exception_handler(ModelNotReadyError)
     async def _not_ready(request: Request, _error_: ModelNotReadyError) -> JSONResponse:
