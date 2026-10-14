@@ -8,7 +8,7 @@ Status labels: `NOT_STARTED`, `IN_PROGRESS`, `BLOCKED`, `IMPLEMENTED`, `TESTED`,
 | 01 | Dataset Ingestion | `phase/01-data-ingestion` | `phase/test-01-data-ingestion` | READY_FOR_REVIEW |
 | 02 | Data Quality and Validation | `phase/02-data-validation` | `phase/test-02-data-validation` | READY_FOR_REVIEW |
 | 03 | Preprocessing Pipeline | `phase/03-preprocessing` | `phase/test-03-preprocessing` | READY_FOR_REVIEW |
-| 04 | Baseline Classification | `phase/04-baseline-model` | `phase/test-04-baseline-model` | NOT_STARTED |
+| 04 | Baseline Classification | `phase/04-baseline-model` | `phase/test-04-baseline-model` | READY_FOR_REVIEW |
 | 05 | Advanced Imbalanced-Learning Models | `phase/05-advanced-models` | `phase/test-05-advanced-models` | NOT_STARTED |
 | 06 | Anomaly Detection Track | `phase/06-anomaly-detection` | `phase/test-06-anomaly-detection` | NOT_STARTED |
 | 07 | Risk Scoring and Decision Engine | `phase/07-risk-engine` | `phase/test-07-risk-engine` | NOT_STARTED |

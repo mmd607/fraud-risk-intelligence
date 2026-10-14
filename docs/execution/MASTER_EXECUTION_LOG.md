@@ -86,3 +86,29 @@ Dataset source: local `dataset.zip` containing `creditcard.csv` (150,828,752 byt
   test 0.132 % fraud rate. Only metadata written (`reports/split_metadata.json`, Git-ignored).
 - **Limitations:** `hour_cyclical` assumes the window starts at midnight (undocumented by source).
 - **Status:** TESTED → READY_FOR_REVIEW
+
+## Phase 04 — Baseline Classification
+
+- **Implementation branch:** `phase/04-baseline-model` (base: `phase/test-03-preprocessing` @ `a63bbc2`)
+- **Test branch:** `phase/test-04-baseline-model` (base: `phase/04-baseline-model`)
+- **Implementation commit:** `cc41fc7` feat: add baseline training with AP-first metrics, validation
+  thresholds, and model bundles
+- **Test commit:** `765e983` test: cover baseline metrics edge cases, artifact integrity, and leakage guards
+- **Files:** `src/fraud_risk/evaluation/metrics.py`, `src/fraud_risk/models/baseline.py`,
+  `src/fraud_risk/training/{artifacts,baseline}.py`, CLI `train-baseline`, settings `models_dir`,
+  `docs/modeling-baseline.md`, `tests/unit/test_metrics.py`,
+  `tests/integration/test_baseline_training.py`, `tests/unit/test_baseline_contract.py` (test branch)
+- **Commands and results (test branch):** `python -m pytest` → 224 passed; `ruff check .` → pass;
+  `ruff format --check .` → pass; `mypy src` → no issues in 25 files; `git diff --check` → clean.
+- **Real-data run:** `fraud-risk train-baseline` (≈17 s). Model id
+  `logistic_regression-20261014t045734`. Test partition (56,948 rows, 96 frauds), thresholds from
+  validation (max-F1):
+  - Dummy prior: AP 0.0017, ROC-AUC 0.500, threshold 0.00172.
+  - Logistic regression: **AP 0.6833**, ROC-AUC 0.9621, precision 0.8706, recall 0.7708,
+    F1 0.8177 at threshold 0.99999466; confusion `[[56841, 11], [22, 74]]`.
+- **Disclosure:** an earlier run selected preprocessing by maximum CV mean (test AP 0.6937).
+  The selection rule was changed to a one-standard-error rule because of training-fold CV noise;
+  the reported numbers are from the final rule. Documented in `docs/modeling-baseline.md`.
+- **Limitations:** single-split estimates with ~100 positives per evaluation partition; scores
+  are uncalibrated (class weighting).
+- **Status:** TESTED → READY_FOR_REVIEW
