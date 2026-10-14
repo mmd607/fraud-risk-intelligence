@@ -11,7 +11,7 @@ Status labels: `NOT_STARTED`, `IN_PROGRESS`, `BLOCKED`, `IMPLEMENTED`, `TESTED`,
 | 04 | Baseline Classification | `phase/04-baseline-model` | `phase/test-04-baseline-model` | READY_FOR_REVIEW |
 | 05 | Advanced Imbalanced-Learning Models | `phase/05-advanced-models` | `phase/test-05-advanced-models` | READY_FOR_REVIEW |
 | 06 | Anomaly Detection Track | `phase/06-anomaly-detection` | `phase/test-06-anomaly-detection` | READY_FOR_REVIEW |
-| 07 | Risk Scoring and Decision Engine | `phase/07-risk-engine` | `phase/test-07-risk-engine` | NOT_STARTED |
+| 07 | Risk Scoring and Decision Engine | `phase/07-risk-engine` | `phase/test-07-risk-engine` | READY_FOR_REVIEW |
 | 08 | Explainability | `phase/08-explainability` | `phase/test-08-explainability` | NOT_STARTED |
 | 09 | Experiment Tracking and Model Registry | `phase/09-model-registry` | `phase/test-09-model-registry` | NOT_STARTED |
 | 10 | Inference API | `phase/10-inference-api` | `phase/test-10-inference-api` | NOT_STARTED |

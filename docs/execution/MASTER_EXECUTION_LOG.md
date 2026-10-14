@@ -152,3 +152,25 @@ Dataset source: local `dataset.zip` containing `creditcard.csv` (150,828,752 byt
   Legitimate-only (label-informed): test AP 0.1095. Supervised reference (Phase 05): 0.8163.
 - **Limitations:** anomaly ≠ fraud; not combined with supervised scores in this phase.
 - **Status:** TESTED → READY_FOR_REVIEW
+
+## Phase 07 — Risk Scoring and Decision Engine
+
+- **Implementation branch:** `phase/07-risk-engine` (base: `phase/test-06-anomaly-detection` @ `6b026a3`)
+- **Test branch:** `phase/test-07-risk-engine` (base: `phase/07-risk-engine` @ `4098d22`, fast-forward)
+- **Implementation commits:** `2899f2e` feat: add configurable risk policy, decision engine, review queue,
+  and illustrative costs; `4098d22` test: construct strict policy through validation in risk engine unit test
+- **Process note:** `2899f2e` was committed while one of its own unit tests failed. The pytest gate
+  had been piped through `tail`, which masked the exit status. The failure was a test bug
+  (`model_copy(update=...)` bypasses pydantic validation). Fixed in `4098d22` before the test
+  branch received any commits. From here on, gate exit codes are checked explicitly.
+- **Test commit:** `cfe3226` test: cover risk policy precedence, independence, log privacy, costs, and CLI
+- **Files:** `src/fraud_risk/policy/config.py`, `src/fraud_risk/risk/{engine,reason_codes,review_queue,costs}.py`,
+  `configs/risk_policy.example.json`, CLI `evaluate-policy`, `docs/risk-policy.md`,
+  `tests/unit/test_risk_engine.py`, `tests/unit/test_risk_policy_contract.py` (test branch)
+- **Commands and results (test branch):** `python -m pytest` → 314 passed (exit 0); `ruff check .` → pass;
+  `ruff format --check .` → pass; `mypy src` → no issues in 38 files; `git diff --check` → clean.
+- **Real-data run:** example policy (review 0.01, block 0.95; read off validation scores) on the
+  Phase 05 HGB bundle. Validation: capture 0.892, block precision 0.957, illustrative cost 1,218 vs
+  10,200 approve-all. Test (once): capture 0.823, block precision 0.973, cost 1,822 vs 9,600.
+- **Limitations:** costs and thresholds are illustrative; scores uncalibrated.
+- **Status:** TESTED → READY_FOR_REVIEW
