@@ -22,3 +22,24 @@ Dataset source: local `dataset.zip` containing `creditcard.csv` (150,828,752 byt
 - **Dataset:** not used in this phase.
 - **Limitations:** CI workflow written but not executed (no remote, push not authorized).
 - **Status:** TESTED → READY_FOR_REVIEW
+
+## Phase 01 — Dataset Ingestion
+
+- **Implementation branch:** `phase/01-data-ingestion` (base: `phase/test-00-foundation` @ `cb0a7ab`)
+- **Test branch:** `phase/test-01-data-ingestion` (base: `phase/01-data-ingestion`)
+- **Implementation commit:** `5612d11` feat: add local dataset ingestion with schema checks, metadata, and CLI
+- **Test commit:** `b20afee` test: cover data ingestion edge cases and CLI behaviour
+- **Files:** `src/fraud_risk/data/{schema,ingestion}.py`, `src/fraud_risk/cli/main.py`,
+  `src/fraud_risk/core/exceptions.py` (data errors), settings `dataset_path`, `pyproject.toml`
+  (pandas/numpy, `fraud-risk` script), `docs/data.md`, `tests/support/synthetic.py`,
+  `tests/unit/test_ingestion.py`, `tests/integration/test_cli_ingest.py`,
+  `tests/unit/test_ingestion_edge_cases.py` (test branch)
+- **Commands and results (test branch):** `python -m pytest` → 90 passed; `ruff check .` → pass;
+  `ruff format --check .` → pass; `mypy src` → no issues in 11 files; `git diff --check` → clean.
+- **Test-branch note:** one new test initially failed because the test helper produced `\r\n`
+  line endings on Windows (a test bug, not a product defect); fixed in the test before commit.
+- **Dataset:** real `creditcard.csv` present locally (Git-ignored). `fraud-risk ingest` verified:
+  284,807 rows, 31 columns, Class 0 = 284,315 / 1 = 492 (0.1727 %), 0 missing cells,
+  1,081 exact duplicate rows, SHA-256 `76274b69…51a89`.
+- **Limitations:** none known for this scope.
+- **Status:** TESTED → READY_FOR_REVIEW
