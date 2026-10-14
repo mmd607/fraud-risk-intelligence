@@ -38,7 +38,11 @@ dashboard → release hygiene.
 | `fraud_risk.data.prepare` | `load_validated_dataset()` (load + refuse invalid data) |
 | `fraud_risk.data.splitting` | Stratified (duplicate-grouped) / temporal splits, `SplitMetadata` |
 | `fraud_risk.features.preprocessing` | Unfitted `ColumnTransformer` with per-column strategies |
-| `fraud_risk.cli.main` | `fraud-risk` CLI (`ingest`, `validate`, `split`, ...) |
+| `fraud_risk.evaluation.metrics` | AP (primary), ROC-AUC, thresholded metrics, top-k, threshold selection |
+| `fraud_risk.models.baseline` | Unfitted pipelines: prior dummy, class-weighted logistic regression |
+| `fraud_risk.training.artifacts` | Model bundles (`model.joblib` + `manifest.json`) with SHA-256 integrity check |
+| `fraud_risk.training.baseline` | Baseline protocol: CV preprocessing comparison, validation thresholds, test evaluation |
+| `fraud_risk.cli.main` | `fraud-risk` CLI (`ingest`, `validate`, `split`, `train-baseline`, ...) |
 
 Later phases extend this table as modules are added.
 
@@ -51,7 +55,10 @@ FraudRiskError (FRAUD_RISK_ERROR)
 │   ├── DatasetNotFoundError (DATA_NOT_FOUND)
 │   ├── DataReadError (DATA_UNREADABLE)
 │   ├── SchemaError (DATA_SCHEMA_INVALID, plus specific DATA_* codes)
-│   └── DataValidationError (DATA_VALIDATION_FAILED)
+│   ├── DataValidationError (DATA_VALIDATION_FAILED)
+│   └── SplitError (DATA_SPLIT_INVALID)
 ├── ModelError (MODEL_ERROR)
+│   └── ModelArtifactError (MODEL_ARTIFACT_INVALID)
+├── MetricsInputError (METRICS_INPUT_INVALID)
 └── DependencyUnavailableError (DEPENDENCY_UNAVAILABLE)
 ```

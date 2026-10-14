@@ -72,6 +72,11 @@ class Settings(BaseSettings):
         """Directory holding manually downloaded raw datasets."""
         return self.data_dir / "raw"
 
+    @property
+    def models_dir(self) -> Path:
+        """Directory holding local model bundles (Git-ignored)."""
+        return self.artifacts_dir / "models"
+
 
 def _format_validation_error(error: ValidationError) -> str:
     """Render a pydantic error without echoing input values (they may be secrets)."""

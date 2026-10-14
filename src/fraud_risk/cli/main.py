@@ -20,6 +20,8 @@ from fraud_risk.data.ingestion import load_transactions
 from fraud_risk.data.prepare import load_validated_dataset
 from fraud_risk.data.quality_report import build_quality_report
 from fraud_risk.data.splitting import SplitConfig, SplitStrategy, split_dataset
+from fraud_risk.evaluation.metrics import ThresholdStrategy
+from fraud_risk.training.baseline import BaselineConfig, run_baseline_training
 
 Handler = Callable[[argparse.Namespace, Settings], dict[str, object]]
 
@@ -81,6 +83,42 @@ def _cmd_split(args: argparse.Namespace, settings: Settings) -> dict[str, object
     }
 
 
+def _cmd_train_baseline(args: argparse.Namespace, settings: Settings) -> dict[str, object]:
+    path: Path = args.path or settings.dataset_path
+    result, _ = load_validated_dataset(path)
+    config = BaselineConfig(
+        split=SplitConfig(seed=settings.random_seed),
+        cv_folds=args.cv_folds,
+        threshold_strategy=ThresholdStrategy(args.threshold_strategy),
+        target_precision=args.target_precision,
+    )
+    outcome = run_baseline_training(
+        result.frame,
+        dataset_sha256=result.metadata.sha256,
+        config=config,
+        models_dir=settings.models_dir,
+        reports_dir=settings.reports_dir,
+    )
+    summary = {
+        e.name: {
+            "threshold": e.threshold.threshold,
+            "test_average_precision": e.test["average_precision"],
+            "test_roc_auc": e.test["roc_auc"],
+            "test_precision": e.test["precision"],
+            "test_recall": e.test["recall"],
+            "test_f1": e.test["f1"],
+        }
+        for e in outcome.evaluations
+    }
+    return {
+        "status": "ok",
+        "model_id": outcome.model_id,
+        "report_path": str(outcome.report_path),
+        "selected_preprocessing": outcome.selected_preprocessing.to_dict(),
+        "models": summary,
+    }
+
+
 def build_parser() -> argparse.ArgumentParser:
     """Create the argument parser with all registered subcommands."""
     parser = argparse.ArgumentParser(prog="fraud-risk", description=__doc__)
@@ -121,6 +159,19 @@ def build_parser() -> argparse.ArgumentParser:
         help="Split metadata path (default: reports/split_metadata.json).",
     )
     split.set_defaults(handler=_cmd_split)
+
+    baseline = sub.add_parser(
+        "train-baseline", help="Train dummy + logistic regression baselines and evaluate them."
+    )
+    baseline.add_argument("--path", type=Path, default=None, help="CSV path (default: settings).")
+    baseline.add_argument("--cv-folds", type=int, default=5)
+    baseline.add_argument(
+        "--threshold-strategy",
+        choices=[s.value for s in ThresholdStrategy if s is not ThresholdStrategy.FIXED],
+        default=ThresholdStrategy.MAX_F1.value,
+    )
+    baseline.add_argument("--target-precision", type=float, default=0.9)
+    baseline.set_defaults(handler=_cmd_train_baseline)
     return parser
 
 

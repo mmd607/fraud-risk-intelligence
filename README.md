@@ -49,6 +49,9 @@ src/fraud_risk/        reusable package code (typed, py.typed marker)
   core/                domain exceptions, structured logging
   data/                schema, ingestion, contracts, validation, quality report
   features/            leakage-safe sklearn preprocessing
+  evaluation/          imbalanced-classification metrics, threshold selection
+  models/              model factories (unfitted sklearn pipelines)
+  training/            training workflows, model bundles
   cli/                 `fraud-risk` command-line entry point
 tests/unit/            fast deterministic unit tests
 tests/integration/     cross-module tests on synthetic fixtures
@@ -67,6 +70,7 @@ Download `creditcard.csv` manually from Kaggle and place it at `data/raw/creditc
 fraud-risk ingest            # structural checks + aggregate metadata as JSON
 fraud-risk validate          # data contract validation -> reports/data_quality.json
 fraud-risk split             # deterministic split -> reports/split_metadata.json (metadata only)
+fraud-risk train-baseline    # dummy vs logistic regression -> reports/baseline_metrics.json
 ```
 
 ## Data and artifacts
