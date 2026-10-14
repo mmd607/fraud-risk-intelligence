@@ -174,3 +174,27 @@ Dataset source: local `dataset.zip` containing `creditcard.csv` (150,828,752 byt
   10,200 approve-all. Test (once): capture 0.823, block precision 0.973, cost 1,822 vs 9,600.
 - **Limitations:** costs and thresholds are illustrative; scores uncalibrated.
 - **Status:** TESTED → READY_FOR_REVIEW
+
+## Phase 08 — Explainability
+
+- **Implementation branch:** `phase/08-explainability` (base: `phase/test-07-risk-engine` @ `445f657`)
+- **Test branch:** `phase/test-08-explainability` (base: `phase/08-explainability` @ `660a455`)
+- **Implementation commits:** `660a455` feat: add explainability (permutation importance,
+  linear/SHAP/occlusion local explanations); `b83fae8` fix: report SHAP output space per model family
+- **Test commits:** `a7ebfcf` test: cover explainability … (RF output-space test exposes defect);
+  `f2a0a8b` merge of the implementation fix into the test branch
+- **Defect found by the test branch:** SHAP explanations for random forests were labelled
+  `output_space="log_odds"`, but TreeExplainer explains RF in probability space. The failing test was
+  committed as evidence, fixed on the implementation branch, and merged (no history rewrite).
+- **Files:** `src/fraud_risk/explainability/{explainers,report}.py`, CLI `explain` (and the CLI parser
+  split into command groups), extra `[explain]` (shap), `docs/explainability.md`,
+  `tests/unit/test_explainability.py`, `tests/unit/test_explainability_contract.py` (test branch)
+- **Commands and results (test branch, after fix):** `python -m pytest` → 337 passed (exit 0);
+  `ruff check .` → pass; `ruff format --check .` → pass; `mypy src` → no issues in 41 files;
+  `git diff --check` → clean.
+- **Real-data run:** `fraud-risk explain` on the HGB bundle (shap 0.53.0, 23 s): top permutation
+  importance V14 0.1648 AP drop, then Amount 0.0069, V10 0.0068, V4 0.0063, V12 0.0062. Local SHAP
+  for top-scored validation frauds is dominated by V14 (+9.9 to +10.9 log-odds). LR bundle (linear):
+  V14 0.0819, V10 0.0420, V8 0.0350.
+- **Limitations:** association, not causation; PCA features have no business meaning; noisy below the top feature.
+- **Status:** TESTED → READY_FOR_REVIEW
