@@ -14,7 +14,7 @@ Status labels: `NOT_STARTED`, `IN_PROGRESS`, `BLOCKED`, `IMPLEMENTED`, `TESTED`,
 | 07 | Risk Scoring and Decision Engine | `phase/07-risk-engine` | `phase/test-07-risk-engine` | READY_FOR_REVIEW |
 | 08 | Explainability | `phase/08-explainability` | `phase/test-08-explainability` | READY_FOR_REVIEW |
 | 09 | Experiment Tracking and Model Registry | `phase/09-model-registry` | `phase/test-09-model-registry` | READY_FOR_REVIEW |
-| 10 | Inference API | `phase/10-inference-api` | `phase/test-10-inference-api` | NOT_STARTED |
+| 10 | Inference API | `phase/10-inference-api` | `phase/test-10-inference-api` | READY_FOR_REVIEW |
 | 11 | Monitoring and Drift Signals | `phase/11-monitoring` | `phase/test-11-monitoring` | NOT_STARTED |
 | 12 | Risk Operations Dashboard | `phase/12-dashboard` | `phase/test-12-dashboard` | NOT_STARTED |
 | 13 | Production Hardening and Release Readiness | `phase/13-production-hardening` | `phase/test-13-production-hardening` | NOT_STARTED |

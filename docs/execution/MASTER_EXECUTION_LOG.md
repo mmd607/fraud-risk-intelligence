@@ -219,3 +219,19 @@ Dataset source: local `dataset.zip` containing `creditcard.csv` (150,828,752 byt
   **Neither was approved.** Promotion is left to the user.
 - **Limitations:** `code_revision` is captured at registration, not training time (documented).
 - **Status:** TESTED → READY_FOR_REVIEW
+
+## Phase 10 — Inference API
+
+- **Implementation branch:** `phase/10-inference-api` (base: `phase/test-09-model-registry` @ `d99dacb`)
+- **Test branch:** `phase/test-10-inference-api` (base: `phase/10-inference-api` @ `7bf6a23`)
+- **Implementation commits:** `7bf6a23` feat: add FastAPI inference service…; `3abfdea` fix: return the error envelope for routing errors (404/405)
+- **Test commits:** `3ba72c4` test: cover API wiring, model selection, log privacy, error contract (exposed defect); `4d86a47` merge of the fix
+- **Defect found by the test branch:** 404/405 responses used Starlette's default `{"detail": …}` body instead of the documented error envelope. Fixed on the implementation branch and merged.
+- **Commands and results (test branch, after fix):** `python -m pytest` → 399 passed (exit 0, 2 third-party deprecation warnings); `ruff check .` → pass; `mypy src` → no issues in 49 files.
+- **Real smoke test:** uvicorn serving the HGB bundle via `FRAUD_RISK_MODEL_BUNDLE_PATH`; the top test fraud was blocked (R003, SHAP top V14/V12/V10), a legit row was approved, and invalid input returned 422. Logs held metadata only.
+- **Status:** TESTED → READY_FOR_REVIEW
+
+## RESUME POINT (session stopped: usage limit)
+
+- Phases 00–10 are READY_FOR_REVIEW. **Next action:** from `phase/test-10-inference-api`, create `phase/11-monitoring` and implement Phase 11 (monitoring/drift), then Phases 12 (Streamlit dashboard) and 13 (Docker/CI/integration tests/model card/release checklist).
+- Before resuming: check `git status`; the venv is `.venv` (Python 3.13, includes xgboost, imbalanced-learn, shap, mlflow, fastapi). Always check the pytest exit code directly (do not pipe it).

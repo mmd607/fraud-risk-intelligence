@@ -4,7 +4,7 @@ Open and resolved blockers. A blocker is recorded only when it genuinely prevent
 
 ## Open
 
-_None yet._
+_None._ Phases 11–13 are NOT_STARTED only because the session hit its usage limit (not a technical blocker).
 
 ## Environment limitations (not blockers)
 
