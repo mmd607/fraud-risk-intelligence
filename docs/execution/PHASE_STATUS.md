@@ -4,7 +4,7 @@ Status labels: `NOT_STARTED`, `IN_PROGRESS`, `BLOCKED`, `IMPLEMENTED`, `TESTED`,
 
 | Phase | Title | Implementation branch | Test branch | Status |
 |---|---|---|---|---|
-| 00 | Project Foundation | `phase/00-foundation` | `phase/test-00-foundation` | IN_PROGRESS |
+| 00 | Project Foundation | `phase/00-foundation` | `phase/test-00-foundation` | READY_FOR_REVIEW |
 | 01 | Dataset Ingestion | `phase/01-data-ingestion` | `phase/test-01-data-ingestion` | NOT_STARTED |
 | 02 | Data Quality and Validation | `phase/02-data-validation` | `phase/test-02-data-validation` | NOT_STARTED |
 | 03 | Preprocessing Pipeline | `phase/03-preprocessing` | `phase/test-03-preprocessing` | NOT_STARTED |
