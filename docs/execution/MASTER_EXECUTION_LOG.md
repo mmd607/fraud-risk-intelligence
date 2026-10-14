@@ -43,3 +43,21 @@ Dataset source: local `dataset.zip` containing `creditcard.csv` (150,828,752 byt
   1,081 exact duplicate rows, SHA-256 `76274b69…51a89`.
 - **Limitations:** none known for this scope.
 - **Status:** TESTED → READY_FOR_REVIEW
+
+## Phase 02 — Data Quality and Validation
+
+- **Implementation branch:** `phase/02-data-validation` (base: `phase/test-01-data-ingestion` @ `c363ad9`)
+- **Test branch:** `phase/test-02-data-validation` (base: `phase/02-data-validation`)
+- **Implementation commit:** `39eb48f` feat: add data contract, validation issues, and JSON quality report
+- **Test commit:** `6deb708`
+  (`test: cover data validation branches, issue-code stability, and CLI`)
+- **Files:** `src/fraud_risk/data/{contracts,validation,quality_report}.py`, CLI `validate`,
+  `DataValidationError`, `docs/data-quality.md`, `tests/unit/test_validation.py`,
+  `tests/unit/test_validation_branches.py` (test branch)
+- **Commands and results (test branch):** `python -m pytest` → 134 passed; `ruff check .` → pass;
+  `ruff format --check .` → pass; `mypy src` → no issues in 14 files; `git diff --check` → clean.
+- **Dataset:** `fraud-risk validate` on the real CSV → valid; one `DQ010` warning
+  (1,081 exact duplicate rows, 0.3796 %). No nulls, infinities, range violations, label conflicts,
+  or ordering issues. Report written to Git-ignored `reports/data_quality.json`.
+- **Limitations:** duplicates are reported, not removed (by design); handled in Phase 03 docs.
+- **Status:** TESTED → READY_FOR_REVIEW
