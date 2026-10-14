@@ -55,6 +55,7 @@ src/fraud_risk/        reusable package code (typed, py.typed marker)
   training/            training workflows, model bundles
   policy/, risk/       risk policy config, decision engine, review queue, costs
   explainability/      permutation importance, linear/SHAP/occlusion explanations
+  registry/            experiment tracking + local model registry (explicit promotion)
   cli/                 `fraud-risk` command-line entry point
 tests/unit/            fast deterministic unit tests
 tests/integration/     cross-module tests on synthetic fixtures
@@ -78,6 +79,8 @@ fraud-risk compare-models    # LR / RF / HGB / XGBoost / SMOTE comparison -> rep
 fraud-risk train-anomaly     # Isolation Forest anomaly ranking -> reports/anomaly_metrics_all.json
 fraud-risk evaluate-policy --policy configs/risk_policy.example.json --bundle artifacts/models/<id>
 fraud-risk explain --bundle artifacts/models/<id>   # global + local explanations (not causal)
+fraud-risk registry register --bundle artifacts/models/<id> --actor "<name>"   # candidate only
+fraud-risk registry transition --version N --to approved --actor "<name>" --reason "<why>"
 ```
 
 ## Data and artifacts

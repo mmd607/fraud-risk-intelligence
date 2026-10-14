@@ -53,7 +53,9 @@ dashboard → release hygiene.
 | `fraud_risk.risk.costs` | Illustrative expected-cost evaluation of a policy |
 | `fraud_risk.explainability.explainers` | Permutation importance; linear / SHAP-tree / occlusion local explanations |
 | `fraud_risk.explainability.report` | Fingerprint-checked explanation report for a bundle |
-| `fraud_risk.cli.main` | `fraud-risk` CLI (`ingest`, `validate`, `split`, `train-baseline`, `compare-models`, `train-anomaly`, `evaluate-policy`, `explain`, ...) |
+| `fraud_risk.registry.tracking` | Tracker protocol: Null / InMemory / optional MLflow (local SQLite default) |
+| `fraud_risk.registry.model_registry` | JSON model registry, explicit candidate → approved → retired lifecycle |
+| `fraud_risk.cli.main` | `fraud-risk` CLI (`ingest`, `validate`, `split`, `train-baseline`, `compare-models`, `train-anomaly`, `evaluate-policy`, `explain`, `registry`, ...) |
 
 Later phases extend this table as modules are added.
 
@@ -69,7 +71,8 @@ FraudRiskError (FRAUD_RISK_ERROR)
 │   ├── DataValidationError (DATA_VALIDATION_FAILED)
 │   └── SplitError (DATA_SPLIT_INVALID)
 ├── ModelError (MODEL_ERROR)
-│   └── ModelArtifactError (MODEL_ARTIFACT_INVALID)
+│   ├── ModelArtifactError (MODEL_ARTIFACT_INVALID)
+│   └── RegistryError (REGISTRY_ERROR)
 ├── MetricsInputError (METRICS_INPUT_INVALID)
 ├── AnomalyInputError (ANOMALY_INPUT_INVALID)
 ├── DetectorNotFittedError (ANOMALY_NOT_FITTED)

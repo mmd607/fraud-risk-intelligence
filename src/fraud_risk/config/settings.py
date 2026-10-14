@@ -56,6 +56,8 @@ class Settings(BaseSettings):
     artifacts_dir: Path = Path("artifacts")
     reports_dir: Path = Path("reports")
     dataset_path: Path = Path("data/raw/creditcard.csv")
+    tracking_enabled: bool = False
+    tracking_uri: str | None = None
 
     @field_validator("log_level")
     @classmethod
@@ -71,6 +73,11 @@ class Settings(BaseSettings):
     def raw_data_dir(self) -> Path:
         """Directory holding manually downloaded raw datasets."""
         return self.data_dir / "raw"
+
+    @property
+    def registry_dir(self) -> Path:
+        """Directory holding the local model registry index (Git-ignored)."""
+        return self.artifacts_dir / "registry"
 
     @property
     def models_dir(self) -> Path:

@@ -25,6 +25,18 @@ from fraud_risk.evaluation.metrics import ThresholdStrategy
 from fraud_risk.explainability.report import build_explanation_report
 from fraud_risk.models.candidates import DEFAULT_CANDIDATES
 from fraud_risk.policy.config import load_policy
+from fraud_risk.registry.model_registry import (
+    LocalModelRegistry,
+    ModelStage,
+    current_code_revision,
+    track_entry,
+)
+from fraud_risk.registry.tracking import (
+    ExperimentTracker,
+    MlflowTracker,
+    NullTracker,
+    default_tracking_uri,
+)
 from fraud_risk.risk.costs import CostAssumptions, evaluate_policy
 from fraud_risk.risk.review_queue import capacity_tradeoff
 from fraud_risk.training.anomaly import AnomalyConfig, FitOn, run_anomaly_training
@@ -234,6 +246,69 @@ def _cmd_explain(args: argparse.Namespace, settings: Settings) -> dict[str, obje
     }
 
 
+def build_tracker(settings: Settings) -> ExperimentTracker:
+    """Tracker from settings: disabled (no-op) unless FRAUD_RISK_TRACKING_ENABLED=true."""
+    if not settings.tracking_enabled:
+        return NullTracker()
+    uri = settings.tracking_uri or default_tracking_uri(settings.artifacts_dir)
+    return MlflowTracker(uri)
+
+
+def _cmd_registry(args: argparse.Namespace, settings: Settings) -> dict[str, object]:
+    registry = LocalModelRegistry(settings.registry_dir)
+    if args.registry_command == "register":
+        entry = registry.register(
+            args.bundle, actor=args.actor, code_revision=current_code_revision(Path.cwd())
+        )
+        tracker = build_tracker(settings)
+        run_id = track_entry(tracker, entry) if tracker.enabled else None
+        return {"status": "ok", "entry": entry.model_dump(mode="json"), "tracking_run": run_id}
+    if args.registry_command == "transition":
+        entry = registry.transition(
+            args.version, ModelStage(args.to), actor=args.actor, reason=args.reason
+        )
+        return {"status": "ok", "entry": entry.model_dump(mode="json")}
+    entries = registry.entries()
+    return {
+        "status": "ok",
+        "approved_version": next(
+            (e.version for e in entries if e.stage is ModelStage.APPROVED), None
+        ),
+        "entries": [
+            {
+                "version": e.version,
+                "model_id": e.model_id,
+                "stage": e.stage.value,
+                "test_average_precision": e.metrics.get("test", {}).get("average_precision"),
+                "code_revision": e.code_revision,
+            }
+            for e in entries
+        ],
+    }
+
+
+def _add_registry_commands(sub: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
+    """Register model-registry commands: list, register, transition."""
+    registry = sub.add_parser("registry", help="Local model registry (explicit lifecycle).")
+    registry_sub = registry.add_subparsers(dest="registry_command", required=True)
+    registry_sub.add_parser("list", help="List registered model versions.")
+    register = registry_sub.add_parser("register", help="Register a bundle as a candidate.")
+    register.add_argument("--bundle", type=Path, required=True)
+    register.add_argument("--actor", required=True, help="Who is registering (audit trail).")
+    transition = registry_sub.add_parser(
+        "transition", help="Explicitly change a version's stage (never automatic)."
+    )
+    transition.add_argument("--version", type=int, required=True)
+    transition.add_argument(
+        "--to",
+        choices=[s.value for s in ModelStage if s is not ModelStage.CANDIDATE],
+        required=True,
+    )
+    transition.add_argument("--actor", required=True)
+    transition.add_argument("--reason", required=True)
+    registry.set_defaults(handler=_cmd_registry)
+
+
 def _add_data_commands(sub: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
     """Register data commands: ingest, validate, split."""
     ingest = sub.add_parser("ingest", help="Load the local CSV and report dataset metadata.")
@@ -346,6 +421,7 @@ def build_parser() -> argparse.ArgumentParser:
     _add_data_commands(sub)
     _add_model_commands(sub)
     _add_decision_commands(sub)
+    _add_registry_commands(sub)
     return parser
 
 
