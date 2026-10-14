@@ -17,7 +17,9 @@ from fraud_risk.config.settings import Settings, load_settings
 from fraud_risk.core.exceptions import DataValidationError, FraudRiskError
 from fraud_risk.core.logging import configure_logging
 from fraud_risk.data.ingestion import load_transactions
+from fraud_risk.data.prepare import load_validated_dataset
 from fraud_risk.data.quality_report import build_quality_report
+from fraud_risk.data.splitting import SplitConfig, SplitStrategy, split_dataset
 
 Handler = Callable[[argparse.Namespace, Settings], dict[str, object]]
 
@@ -58,6 +60,27 @@ def _cmd_validate(args: argparse.Namespace, settings: Settings) -> dict[str, obj
     return payload
 
 
+def _cmd_split(args: argparse.Namespace, settings: Settings) -> dict[str, object]:
+    path: Path = args.path or settings.dataset_path
+    result, _ = load_validated_dataset(path)
+    config = SplitConfig(
+        test_size=args.test_size,
+        validation_size=args.validation_size,
+        seed=settings.random_seed,
+        strategy=SplitStrategy(args.strategy),
+        group_duplicates=not args.no_group_duplicates,
+    )
+    splits = split_dataset(result.frame, config)
+    output: Path = args.output or settings.reports_dir / "split_metadata.json"
+    splits.metadata.write_json(output)
+    return {
+        "status": "ok",
+        "metadata_path": str(output),
+        "dataset_sha256": result.metadata.sha256,
+        "split": splits.metadata.to_dict(),
+    }
+
+
 def build_parser() -> argparse.ArgumentParser:
     """Create the argument parser with all registered subcommands."""
     parser = argparse.ArgumentParser(prog="fraud-risk", description=__doc__)
@@ -81,6 +104,19 @@ def build_parser() -> argparse.ArgumentParser:
         help="Report path (default: reports/data_quality.json).",
     )
     validate.set_defaults(handler=_cmd_validate)
+
+    split = sub.add_parser("split", help="Split deterministically and persist split metadata only.")
+    split.add_argument("--path", type=Path, default=None, help="CSV path (default: settings).")
+    split.add_argument(
+        "--strategy", choices=[s.value for s in SplitStrategy], default=SplitStrategy.STRATIFIED
+    )
+    split.add_argument("--test-size", type=float, default=0.2)
+    split.add_argument("--validation-size", type=float, default=0.2)
+    split.add_argument("--no-group-duplicates", action="store_true")
+    split.add_argument(
+        "--output", type=Path, default=None, help="Default: reports/split_metadata.json."
+    )
+    split.set_defaults(handler=_cmd_split)
     return parser
 
 

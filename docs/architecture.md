@@ -35,7 +35,10 @@ dashboard → release hygiene.
 | `fraud_risk.data.contracts` | `DataContract`, `ColumnSpec`, `creditcard_contract()` |
 | `fraud_risk.data.validation` | `validate_dataframe()` → issues with stable `DQ0xx` codes and severities |
 | `fraud_risk.data.quality_report` | `build_quality_report()` → JSON report of issues + aggregate statistics |
-| `fraud_risk.cli.main` | `fraud-risk` CLI (`ingest`, `validate`, ...) |
+| `fraud_risk.data.prepare` | `load_validated_dataset()` (load + refuse invalid data) |
+| `fraud_risk.data.splitting` | Stratified (duplicate-grouped) / temporal splits, `SplitMetadata` |
+| `fraud_risk.features.preprocessing` | Unfitted `ColumnTransformer` with per-column strategies |
+| `fraud_risk.cli.main` | `fraud-risk` CLI (`ingest`, `validate`, `split`, ...) |
 
 Later phases extend this table as modules are added.
 
