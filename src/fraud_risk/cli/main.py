@@ -13,6 +13,7 @@ import sys
 from collections.abc import Callable, Sequence
 from pathlib import Path
 
+from fraud_risk.anomaly.detectors import IsolationForestConfig
 from fraud_risk.config.settings import Settings, load_settings
 from fraud_risk.core.exceptions import DataValidationError, FraudRiskError
 from fraud_risk.core.logging import configure_logging
@@ -22,6 +23,7 @@ from fraud_risk.data.quality_report import build_quality_report
 from fraud_risk.data.splitting import SplitConfig, SplitStrategy, split_dataset
 from fraud_risk.evaluation.metrics import ThresholdStrategy
 from fraud_risk.models.candidates import DEFAULT_CANDIDATES
+from fraud_risk.training.anomaly import AnomalyConfig, FitOn, run_anomaly_training
 from fraud_risk.training.baseline import BaselineConfig, run_baseline_training
 from fraud_risk.training.experiments import ExperimentConfig, run_model_comparison
 
@@ -159,6 +161,24 @@ def _cmd_compare_models(args: argparse.Namespace, settings: Settings) -> dict[st
     }
 
 
+def _cmd_train_anomaly(args: argparse.Namespace, settings: Settings) -> dict[str, object]:
+    path: Path = args.path or settings.dataset_path
+    result, _ = load_validated_dataset(path)
+    config = AnomalyConfig(
+        split=SplitConfig(seed=settings.random_seed),
+        detector=IsolationForestConfig(seed=settings.random_seed),
+        fit_on=FitOn(args.fit_on),
+    )
+    outcome = run_anomaly_training(
+        result.frame,
+        dataset_sha256=result.metadata.sha256,
+        config=config,
+        models_dir=settings.models_dir,
+        reports_dir=settings.reports_dir,
+    )
+    return {"status": "ok", "report_path": str(outcome.report_path), **outcome.to_dict()}
+
+
 def build_parser() -> argparse.ArgumentParser:
     """Create the argument parser with all registered subcommands."""
     parser = argparse.ArgumentParser(prog="fraud-risk", description=__doc__)
@@ -225,6 +245,13 @@ def build_parser() -> argparse.ArgumentParser:
     )
     compare.add_argument("--cv-folds", type=int, default=3)
     compare.set_defaults(handler=_cmd_compare_models)
+
+    anomaly = sub.add_parser(
+        "train-anomaly", help="Fit an Isolation Forest and evaluate anomaly rankings."
+    )
+    anomaly.add_argument("--path", type=Path, default=None, help="CSV path (default: settings).")
+    anomaly.add_argument("--fit-on", choices=[f.value for f in FitOn], default=FitOn.ALL.value)
+    anomaly.set_defaults(handler=_cmd_train_anomaly)
     return parser
 
 

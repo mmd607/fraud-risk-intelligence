@@ -44,7 +44,10 @@ dashboard → release hygiene.
 | `fraud_risk.training.baseline` | Baseline protocol: CV preprocessing comparison, validation thresholds, test evaluation |
 | `fraud_risk.models.candidates` | Candidate specs + search spaces (LR, RF, HGB, optional XGBoost / SMOTE) |
 | `fraud_risk.training.experiments` | CV comparison on training folds, CV-AP selection, single test evaluation |
-| `fraud_risk.cli.main` | `fraud-risk` CLI (`ingest`, `validate`, `split`, `train-baseline`, `compare-models`, ...) |
+| `fraud_risk.anomaly.detectors` | `AnomalyDetector` protocol, `IsolationForestDetector` (rejects the label) |
+| `fraud_risk.anomaly.evaluation` | Ranking evaluation of anomaly scores at review budgets |
+| `fraud_risk.training.anomaly` | Anomaly-track workflow (unsupervised or legitimate-only fit) |
+| `fraud_risk.cli.main` | `fraud-risk` CLI (`ingest`, `validate`, `split`, `train-baseline`, `compare-models`, `train-anomaly`, ...) |
 
 Later phases extend this table as modules are added.
 
@@ -62,5 +65,7 @@ FraudRiskError (FRAUD_RISK_ERROR)
 ├── ModelError (MODEL_ERROR)
 │   └── ModelArtifactError (MODEL_ARTIFACT_INVALID)
 ├── MetricsInputError (METRICS_INPUT_INVALID)
+├── AnomalyInputError (ANOMALY_INPUT_INVALID)
+├── DetectorNotFittedError (ANOMALY_NOT_FITTED)
 └── DependencyUnavailableError (DEPENDENCY_UNAVAILABLE)
 ```
