@@ -48,7 +48,7 @@ def test_missing_or_invalid_score_is_fail_safe(policy: RiskPolicy, score: float 
 
 
 def test_missing_score_can_block(policy: RiskPolicy) -> None:
-    strict = policy.model_copy(update={"missing_score_action": "block"})
+    strict = RiskPolicy(**{**policy.model_dump(), "missing_score_action": "block"})
     assert RiskEngine(strict).decide(None).action is Action.BLOCK
 
 
