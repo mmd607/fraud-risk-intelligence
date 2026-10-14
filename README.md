@@ -71,6 +71,7 @@ fraud-risk ingest            # structural checks + aggregate metadata as JSON
 fraud-risk validate          # data contract validation -> reports/data_quality.json
 fraud-risk split             # deterministic split -> reports/split_metadata.json (metadata only)
 fraud-risk train-baseline    # dummy vs logistic regression -> reports/baseline_metrics.json
+fraud-risk compare-models    # LR / RF / HGB / XGBoost / SMOTE comparison -> reports/model_comparison.*
 ```
 
 ## Data and artifacts

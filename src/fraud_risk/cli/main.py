@@ -21,7 +21,9 @@ from fraud_risk.data.prepare import load_validated_dataset
 from fraud_risk.data.quality_report import build_quality_report
 from fraud_risk.data.splitting import SplitConfig, SplitStrategy, split_dataset
 from fraud_risk.evaluation.metrics import ThresholdStrategy
+from fraud_risk.models.candidates import DEFAULT_CANDIDATES
 from fraud_risk.training.baseline import BaselineConfig, run_baseline_training
+from fraud_risk.training.experiments import ExperimentConfig, run_model_comparison
 
 Handler = Callable[[argparse.Namespace, Settings], dict[str, object]]
 
@@ -119,6 +121,44 @@ def _cmd_train_baseline(args: argparse.Namespace, settings: Settings) -> dict[st
     }
 
 
+def _cmd_compare_models(args: argparse.Namespace, settings: Settings) -> dict[str, object]:
+    path: Path = args.path or settings.dataset_path
+    result, _ = load_validated_dataset(path)
+    config = ExperimentConfig(
+        split=SplitConfig(seed=settings.random_seed),
+        candidates=tuple(args.candidates),
+        cv_folds=args.cv_folds,
+    )
+    outcome = run_model_comparison(
+        result.frame,
+        dataset_sha256=result.metadata.sha256,
+        config=config,
+        models_dir=settings.models_dir,
+        reports_dir=settings.reports_dir,
+    )
+    return {
+        "status": "ok",
+        "selected": outcome.selected,
+        "selection_objective": outcome.selection_objective,
+        "model_id": outcome.model_id,
+        "report_path": str(outcome.report_path),
+        "candidates": [
+            {
+                "name": c.name,
+                "status": c.status,
+                "reason": c.reason,
+                "cv_ap_mean": c.cv_ap_mean,
+                "validation_ap": c.validation.get("average_precision"),
+            }
+            for c in outcome.candidates
+        ],
+        "selected_test": {
+            key: outcome.test[key]
+            for key in ("average_precision", "roc_auc", "precision", "recall", "f1", "threshold")
+        },
+    }
+
+
 def build_parser() -> argparse.ArgumentParser:
     """Create the argument parser with all registered subcommands."""
     parser = argparse.ArgumentParser(prog="fraud-risk", description=__doc__)
@@ -172,6 +212,19 @@ def build_parser() -> argparse.ArgumentParser:
     )
     baseline.add_argument("--target-precision", type=float, default=0.9)
     baseline.set_defaults(handler=_cmd_train_baseline)
+
+    compare = sub.add_parser(
+        "compare-models", help="Tune candidates with CV on training folds and select one."
+    )
+    compare.add_argument("--path", type=Path, default=None, help="CSV path (default: settings).")
+    compare.add_argument(
+        "--candidates",
+        nargs="+",
+        choices=list(DEFAULT_CANDIDATES),
+        default=list(DEFAULT_CANDIDATES),
+    )
+    compare.add_argument("--cv-folds", type=int, default=3)
+    compare.set_defaults(handler=_cmd_compare_models)
     return parser
 
 

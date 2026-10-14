@@ -42,7 +42,9 @@ dashboard → release hygiene.
 | `fraud_risk.models.baseline` | Unfitted pipelines: prior dummy, class-weighted logistic regression |
 | `fraud_risk.training.artifacts` | Model bundles (`model.joblib` + `manifest.json`) with SHA-256 integrity check |
 | `fraud_risk.training.baseline` | Baseline protocol: CV preprocessing comparison, validation thresholds, test evaluation |
-| `fraud_risk.cli.main` | `fraud-risk` CLI (`ingest`, `validate`, `split`, `train-baseline`, ...) |
+| `fraud_risk.models.candidates` | Candidate specs + search spaces (LR, RF, HGB, optional XGBoost / SMOTE) |
+| `fraud_risk.training.experiments` | CV comparison on training folds, CV-AP selection, single test evaluation |
+| `fraud_risk.cli.main` | `fraud-risk` CLI (`ingest`, `validate`, `split`, `train-baseline`, `compare-models`, ...) |
 
 Later phases extend this table as modules are added.
 
