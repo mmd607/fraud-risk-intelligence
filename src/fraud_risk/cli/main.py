@@ -15,7 +15,7 @@ from pathlib import Path
 
 from fraud_risk.anomaly.detectors import IsolationForestConfig
 from fraud_risk.config.settings import Settings, load_settings
-from fraud_risk.core.exceptions import DataValidationError, FraudRiskError
+from fraud_risk.core.exceptions import ConfigurationError, DataValidationError, FraudRiskError
 from fraud_risk.core.logging import configure_logging
 from fraud_risk.data.ingestion import load_transactions
 from fraud_risk.data.prepare import load_validated_dataset
@@ -23,6 +23,9 @@ from fraud_risk.data.quality_report import build_quality_report
 from fraud_risk.data.splitting import SplitConfig, SplitStrategy, split_dataset
 from fraud_risk.evaluation.metrics import ThresholdStrategy
 from fraud_risk.models.candidates import DEFAULT_CANDIDATES
+from fraud_risk.policy.config import load_policy
+from fraud_risk.risk.costs import CostAssumptions, evaluate_policy
+from fraud_risk.risk.review_queue import capacity_tradeoff
 from fraud_risk.training.anomaly import AnomalyConfig, FitOn, run_anomaly_training
 from fraud_risk.training.baseline import BaselineConfig, run_baseline_training
 from fraud_risk.training.experiments import ExperimentConfig, run_model_comparison
@@ -179,6 +182,36 @@ def _cmd_train_anomaly(args: argparse.Namespace, settings: Settings) -> dict[str
     return {"status": "ok", "report_path": str(outcome.report_path), **outcome.to_dict()}
 
 
+def _read_scores(bundle: Path, partition: str) -> tuple[list[int], list[float]]:
+    import pandas as pd  # noqa: PLC0415 - only needed by this command
+
+    path = bundle / f"scores_{partition}.csv"
+    if not path.is_file():
+        msg = f"No {partition} scores found in bundle '{bundle.name}'."
+        raise ConfigurationError(msg)
+    frame = pd.read_csv(path)
+    return frame["label"].astype(int).tolist(), frame["score"].astype(float).tolist()
+
+
+def _cmd_evaluate_policy(args: argparse.Namespace, _settings: Settings) -> dict[str, object]:
+    policy = load_policy(args.policy)
+    labels, scores = _read_scores(args.bundle, args.partition)
+    costs = CostAssumptions(
+        missed_fraud_cost=args.missed_fraud_cost,
+        false_block_cost=args.false_block_cost,
+        review_cost=args.review_cost,
+    )
+    outcome = evaluate_policy(labels, scores, policy, costs)
+    capacities = [c for c in (50, 100, 150, 250, 500) if c <= len(scores)]
+    return {
+        "status": "ok",
+        "partition": args.partition,
+        "policy": policy.model_dump(mode="json"),
+        "outcome": outcome.to_dict(),
+        "capacity_tradeoff": [p.to_dict() for p in capacity_tradeoff(labels, scores, capacities)],
+    }
+
+
 def build_parser() -> argparse.ArgumentParser:
     """Create the argument parser with all registered subcommands."""
     parser = argparse.ArgumentParser(prog="fraud-risk", description=__doc__)
@@ -252,6 +285,24 @@ def build_parser() -> argparse.ArgumentParser:
     anomaly.add_argument("--path", type=Path, default=None, help="CSV path (default: settings).")
     anomaly.add_argument("--fit-on", choices=[f.value for f in FitOn], default=FitOn.ALL.value)
     anomaly.set_defaults(handler=_cmd_train_anomaly)
+
+    policy = sub.add_parser(
+        "evaluate-policy",
+        help="Apply a risk policy to a bundle's saved scores (illustrative costs).",
+    )
+    policy.add_argument("--policy", type=Path, required=True, help="Risk policy JSON file.")
+    policy.add_argument("--bundle", type=Path, required=True, help="Model bundle directory.")
+    policy.add_argument(
+        "--partition",
+        choices=["validation", "test"],
+        default="validation",
+        help="Tune on validation; use test only for the final check.",
+    )
+    policy.add_argument("--missed-fraud-cost", type=float, default=100.0)
+    policy.add_argument("--false-block-cost", type=float, default=10.0)
+    policy.add_argument("--review-cost", type=float, default=2.0)
+    policy.add_argument("--output", type=Path, default=None, help="Also write JSON here.")
+    policy.set_defaults(handler=_cmd_evaluate_policy)
     return parser
 
 

@@ -53,6 +53,7 @@ src/fraud_risk/        reusable package code (typed, py.typed marker)
   models/              model factories (unfitted sklearn pipelines)
   anomaly/             unsupervised anomaly detection (separate score)
   training/            training workflows, model bundles
+  policy/, risk/       risk policy config, decision engine, review queue, costs
   cli/                 `fraud-risk` command-line entry point
 tests/unit/            fast deterministic unit tests
 tests/integration/     cross-module tests on synthetic fixtures
@@ -74,6 +75,7 @@ fraud-risk split             # deterministic split -> reports/split_metadata.jso
 fraud-risk train-baseline    # dummy vs logistic regression -> reports/baseline_metrics.json
 fraud-risk compare-models    # LR / RF / HGB / XGBoost / SMOTE comparison -> reports/model_comparison.*
 fraud-risk train-anomaly     # Isolation Forest anomaly ranking -> reports/anomaly_metrics_all.json
+fraud-risk evaluate-policy --policy configs/risk_policy.example.json --bundle artifacts/models/<id>
 ```
 
 ## Data and artifacts

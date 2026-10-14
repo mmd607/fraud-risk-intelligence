@@ -47,7 +47,11 @@ dashboard → release hygiene.
 | `fraud_risk.anomaly.detectors` | `AnomalyDetector` protocol, `IsolationForestDetector` (rejects the label) |
 | `fraud_risk.anomaly.evaluation` | Ranking evaluation of anomaly scores at review budgets |
 | `fraud_risk.training.anomaly` | Anomaly-track workflow (unsupervised or legitimate-only fit) |
-| `fraud_risk.cli.main` | `fraud-risk` CLI (`ingest`, `validate`, `split`, `train-baseline`, `compare-models`, `train-anomaly`, ...) |
+| `fraud_risk.policy.config` | Validated, versioned `RiskPolicy` (illustrative thresholds) |
+| `fraud_risk.risk.engine` | `RiskEngine`: score → band → action + reason codes (labels only) |
+| `fraud_risk.risk.review_queue` | Review-queue ranking and capacity trade-offs |
+| `fraud_risk.risk.costs` | Illustrative expected-cost evaluation of a policy |
+| `fraud_risk.cli.main` | `fraud-risk` CLI (`ingest`, `validate`, `split`, `train-baseline`, `compare-models`, `train-anomaly`, `evaluate-policy`, ...) |
 
 Later phases extend this table as modules are added.
 

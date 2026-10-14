@@ -1,0 +1,9 @@
+{
+  "version": "demo-2026-10-14",
+  "review_threshold": 0.01,
+  "block_threshold": 0.95,
+  "missing_score_action": "review",
+  "anomaly_escalation": {"enabled": false, "score_threshold": 0.6},
+  "review_capacity": 150,
+  "description": "Illustrative demo policy. Thresholds were read off validation scores of the Phase 05 model; they are examples, not banking policy. Actions are labels only and trigger no external effect."
+}
