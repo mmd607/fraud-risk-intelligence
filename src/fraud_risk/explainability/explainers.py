@@ -8,7 +8,8 @@ Methods
 * **Local — linear** (exact): for logistic regression, ``coef_j * x_j`` in log-odds space on the
   transformed features; contributions plus intercept equal the decision function.
 * **Local — SHAP tree** (optional ``shap`` package): ``TreeExplainer`` on the classifier with the
-  preprocessed row; additive in the model's raw (log-odds) output.
+  preprocessed row; additive in the model's raw output (log-odds for gradient boosting,
+  probability for random forests / extra trees / single trees).
 * **Local — occlusion** (deterministic fallback): ``f(x) - f(x with feature j set to its
   reference value)`` in probability space, where the reference is the median of a background
   sample. It is a sensitivity measure and is **not additive**.
@@ -38,6 +39,13 @@ from fraud_risk.models.baseline import CLASSIFIER_STEP, PREPROCESS_STEP
 CAUSALITY_CAVEAT = (
     "Explanations describe model behaviour (association), not causes of fraud. V1-V28 are "
     "anonymised PCA components without business meaning."
+)
+# SHAP TreeExplainer explains the model's raw output: probabilities for bagged trees, the
+# log-odds margin for gradient boosting.
+_SHAP_PROBABILITY_TYPES = (
+    "RandomForestClassifier",
+    "ExtraTreesClassifier",
+    "DecisionTreeClassifier",
 )
 _SHAP_TREE_TYPES = (
     "HistGradientBoostingClassifier",
@@ -303,7 +311,8 @@ def explain_local(
         output_space, additive = "log_odds", True
     elif chosen is LocalMethod.SHAP_TREE:
         base, pairs = _shap_tree(pipeline, x)
-        output_space, additive = "log_odds", True
+        probability_model = _classifier_type(pipeline) in _SHAP_PROBABILITY_TYPES
+        output_space, additive = ("probability" if probability_model else "log_odds"), True
     else:
         if background is None or background.empty:
             msg = "Occlusion explanations need a non-empty background sample."

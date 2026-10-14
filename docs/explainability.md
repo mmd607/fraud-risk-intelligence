@@ -11,7 +11,7 @@
 |---|---|---|---|---|
 | Global | Permutation importance (drop in AP when a raw input feature is shuffled; full pipeline) | any `Pipeline(preprocess → classifier)` | AP drop | — |
 | Local | `linear`: `coef_j × x_j` on transformed features, plus the intercept | `LogisticRegression` | log-odds | yes (exact) |
-| Local | `shap_tree`: SHAP `TreeExplainer` on the preprocessed row | HGB, RF, ExtraTrees, GB, DecisionTree, XGBoost; needs optional `shap` (`pip install "fraud-risk[explain]"`) | log-odds (raw margin) | yes |
+| Local | `shap_tree`: SHAP `TreeExplainer` on the preprocessed row | HGB, RF, ExtraTrees, GB, DecisionTree, XGBoost; needs optional `shap` (`pip install "fraud-risk[explain]"`) | log-odds for boosting; probability for RF / ExtraTrees / DecisionTree | yes |
 | Local | `occlusion` (fallback): `f(x) − f(x with feature j := background median)` | any model with `predict_proba` | probability | **no** |
 
 `resolve_method(model, "auto")` picks `linear` for logistic regression, `shap_tree` for supported
@@ -67,6 +67,7 @@ unstable.
 - Permutation importance underestimates features that are correlated with others (the model can
   substitute one for another). PCA components are uncorrelated by construction, but `Time` and
   `Amount` are not PCA outputs.
-- SHAP values explain the boosted model's raw margin, not calibrated probabilities.
+- SHAP values explain each model's raw output (log-odds margin for boosting, probability for
+  bagged trees); neither is a calibrated fraud probability.
 - Occlusion depends on the chosen reference (background median) and is not additive.
 - About 100 validation frauds make importance estimates noisy.
