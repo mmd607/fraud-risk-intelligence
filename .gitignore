@@ -1,0 +1,46 @@
+# --- Data: never commit datasets (Kaggle license + privacy) ---
+data/
+*.csv
+*.parquet
+*.zip
+
+# --- Generated artifacts, models, reports, tracking ---
+artifacts/
+reports/
+mlruns/
+mlartifacts/
+*.joblib
+*.pkl
+*.pickle
+*.onnx
+*.db
+*.sqlite
+
+# --- Secrets ---
+.env
+.env.*
+!.env.example
+
+# --- Python / tooling caches ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+
+# --- Editors / OS ---
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
