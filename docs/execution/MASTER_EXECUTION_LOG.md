@@ -198,3 +198,24 @@ Dataset source: local `dataset.zip` containing `creditcard.csv` (150,828,752 byt
   V14 0.0819, V10 0.0420, V8 0.0350.
 - **Limitations:** association, not causation; PCA features have no business meaning; noisy below the top feature.
 - **Status:** TESTED → READY_FOR_REVIEW
+
+## Phase 09 — Experiment Tracking and Model Registry
+
+- **Implementation branch:** `phase/09-model-registry` (base: `phase/test-08-explainability` @ `fb655b4`)
+- **Test branch:** `phase/test-09-model-registry` (base: `phase/09-model-registry`)
+- **Implementation commit:** `a533af6` feat: add local model registry with explicit lifecycle and optional MLflow tracking
+- **Test commit:** `a2c93b1` test: cover registry lifecycle safety, metadata validation, offline tracking, and CLI
+- **Files:** `src/fraud_risk/registry/{tracking,model_registry}.py`, CLI `registry list|register|transition`,
+  settings `tracking_enabled`/`tracking_uri`/`registry_dir`, extra `[tracking]` (mlflow),
+  `docs/model-lifecycle.md`, `tests/unit/test_registry.py`, `tests/unit/test_registry_contract.py` (test branch)
+- **Commands and results (test branch):** `python -m pytest` → 367 passed, 1 third-party warning
+  (MLflow/SQLAlchemy deprecation); `ruff check .` → pass; `ruff format --check .` → pass;
+  `mypy src` → no issues in 44 files; `git diff --check` → clean.
+- **MLflow:** 3.17.1 installed in the venv (install took ~15 min, network-bound). A real local SQLite
+  tracking test passes; both real registry entries were logged to `artifacts/mlflow/mlflow.db`
+  (runs `dd8c2dfc…`, `24541fb0…`). Tracking stays disabled by default.
+- **Registry state:** v1 `logistic_regression-20261014t045734` (test AP 0.6833) and v2
+  `hist_gradient_boosting-20261014t050441` (test AP 0.8163) registered as **candidates**.
+  **Neither was approved.** Promotion is left to the user.
+- **Limitations:** `code_revision` is captured at registration, not training time (documented).
+- **Status:** TESTED → READY_FOR_REVIEW
