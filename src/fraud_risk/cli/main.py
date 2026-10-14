@@ -22,11 +22,13 @@ from fraud_risk.data.prepare import load_validated_dataset
 from fraud_risk.data.quality_report import build_quality_report
 from fraud_risk.data.splitting import SplitConfig, SplitStrategy, split_dataset
 from fraud_risk.evaluation.metrics import ThresholdStrategy
+from fraud_risk.explainability.report import build_explanation_report
 from fraud_risk.models.candidates import DEFAULT_CANDIDATES
 from fraud_risk.policy.config import load_policy
 from fraud_risk.risk.costs import CostAssumptions, evaluate_policy
 from fraud_risk.risk.review_queue import capacity_tradeoff
 from fraud_risk.training.anomaly import AnomalyConfig, FitOn, run_anomaly_training
+from fraud_risk.training.artifacts import load_model_bundle
 from fraud_risk.training.baseline import BaselineConfig, run_baseline_training
 from fraud_risk.training.experiments import ExperimentConfig, run_model_comparison
 
@@ -212,11 +214,28 @@ def _cmd_evaluate_policy(args: argparse.Namespace, _settings: Settings) -> dict[
     }
 
 
-def build_parser() -> argparse.ArgumentParser:
-    """Create the argument parser with all registered subcommands."""
-    parser = argparse.ArgumentParser(prog="fraud-risk", description=__doc__)
-    sub = parser.add_subparsers(dest="command", required=True)
+def _cmd_explain(args: argparse.Namespace, settings: Settings) -> dict[str, object]:
+    path: Path = args.path or settings.dataset_path
+    result, _ = load_validated_dataset(path)
+    bundle = load_model_bundle(args.bundle)
+    if bundle.manifest.dataset_sha256 not in (None, result.metadata.sha256):
+        msg = "The dataset differs from the one recorded in the bundle manifest."
+        raise ConfigurationError(msg)
+    report = build_explanation_report(
+        bundle, result.frame, reports_dir=settings.reports_dir, n_local=args.n_local
+    )
+    importances = report.payload["global"]["importances"][: args.top]
+    return {
+        "status": "ok",
+        "report_path": str(report.path),
+        "local_method": report.payload["local_method"],
+        "top_global_importances": importances,
+        "caveat": report.payload["caveat"],
+    }
 
+
+def _add_data_commands(sub: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
+    """Register data commands: ingest, validate, split."""
     ingest = sub.add_parser("ingest", help="Load the local CSV and report dataset metadata.")
     ingest.add_argument("--path", type=Path, default=None, help="CSV path (default: settings).")
     ingest.add_argument("--allow-extra-columns", action="store_true")
@@ -253,6 +272,9 @@ def build_parser() -> argparse.ArgumentParser:
     )
     split.set_defaults(handler=_cmd_split)
 
+
+def _add_model_commands(sub: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
+    """Register model commands: train-baseline, compare-models, train-anomaly."""
     baseline = sub.add_parser(
         "train-baseline", help="Train dummy + logistic regression baselines and evaluate them."
     )
@@ -286,6 +308,9 @@ def build_parser() -> argparse.ArgumentParser:
     anomaly.add_argument("--fit-on", choices=[f.value for f in FitOn], default=FitOn.ALL.value)
     anomaly.set_defaults(handler=_cmd_train_anomaly)
 
+
+def _add_decision_commands(sub: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
+    """Register decision and explanation commands: evaluate-policy, explain."""
     policy = sub.add_parser(
         "evaluate-policy",
         help="Apply a risk policy to a bundle's saved scores (illustrative costs).",
@@ -303,6 +328,24 @@ def build_parser() -> argparse.ArgumentParser:
     policy.add_argument("--review-cost", type=float, default=2.0)
     policy.add_argument("--output", type=Path, default=None, help="Also write JSON here.")
     policy.set_defaults(handler=_cmd_evaluate_policy)
+
+    explain = sub.add_parser(
+        "explain", help="Global permutation importance + local explanations for a bundle."
+    )
+    explain.add_argument("--bundle", type=Path, required=True, help="Model bundle directory.")
+    explain.add_argument("--path", type=Path, default=None, help="CSV path (default: settings).")
+    explain.add_argument("--n-local", type=int, default=5)
+    explain.add_argument("--top", type=int, default=10)
+    explain.set_defaults(handler=_cmd_explain)
+
+
+def build_parser() -> argparse.ArgumentParser:
+    """Create the argument parser with all registered subcommands."""
+    parser = argparse.ArgumentParser(prog="fraud-risk", description=__doc__)
+    sub = parser.add_subparsers(dest="command", required=True)
+    _add_data_commands(sub)
+    _add_model_commands(sub)
+    _add_decision_commands(sub)
     return parser
 
 
