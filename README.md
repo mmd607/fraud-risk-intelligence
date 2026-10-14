@@ -56,6 +56,7 @@ src/fraud_risk/        reusable package code (typed, py.typed marker)
   policy/, risk/       risk policy config, decision engine, review queue, costs
   explainability/      permutation importance, linear/SHAP/occlusion explanations
   registry/            experiment tracking + local model registry (explicit promotion)
+  services/, api/      inference service + FastAPI app
   cli/                 `fraud-risk` command-line entry point
 tests/unit/            fast deterministic unit tests
 tests/integration/     cross-module tests on synthetic fixtures
@@ -82,6 +83,15 @@ fraud-risk explain --bundle artifacts/models/<id>   # global + local explanation
 fraud-risk registry register --bundle artifacts/models/<id> --actor "<name>"   # candidate only
 fraud-risk registry transition --version N --to approved --actor "<name>" --reason "<why>"
 ```
+
+## Inference API
+
+```bash
+pip install -e ".[api,explain]"
+FRAUD_RISK_MODEL_BUNDLE_PATH=artifacts/models/<id> uvicorn fraud_risk.api.app:create_app --factory
+```
+
+See [`docs/api.md`](docs/api.md) for endpoints, schemas, and the error contract.
 
 ## Data and artifacts
 

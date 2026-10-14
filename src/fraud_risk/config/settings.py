@@ -12,7 +12,7 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
-from pydantic import Field, ValidationError, field_validator
+from pydantic import Field, SecretStr, ValidationError, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from fraud_risk.core.exceptions import ConfigurationError
@@ -58,6 +58,10 @@ class Settings(BaseSettings):
     dataset_path: Path = Path("data/raw/creditcard.csv")
     tracking_enabled: bool = False
     tracking_uri: str | None = None
+    model_bundle_path: Path | None = None
+    risk_policy_path: Path = Path("configs/risk_policy.example.json")
+    api_key: SecretStr | None = None
+    api_max_batch_size: int = Field(default=500, ge=1, le=10_000)
 
     @field_validator("log_level")
     @classmethod
