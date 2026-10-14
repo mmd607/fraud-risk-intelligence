@@ -53,6 +53,12 @@ class SchemaError(DataError):
     code = "DATA_SCHEMA_INVALID"
 
 
+class DataValidationError(DataError):
+    """Data violates its contract with error-severity issues (see the quality report)."""
+
+    code = "DATA_VALIDATION_FAILED"
+
+
 class ModelError(FraudRiskError):
     """A model or model artifact cannot be trained, loaded, or used."""
 

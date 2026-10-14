@@ -32,7 +32,10 @@ dashboard → release hygiene.
 | `fraud_risk.core.logging` | JSON/console formatters, redaction, `configure_logging`, `log_event` |
 | `fraud_risk.data.schema` | Column constants; `FEATURE_COLUMNS` excludes the target |
 | `fraud_risk.data.ingestion` | `load_transactions()` structural checks + `DatasetMetadata` |
-| `fraud_risk.cli.main` | `fraud-risk` CLI (`ingest`, ...) |
+| `fraud_risk.data.contracts` | `DataContract`, `ColumnSpec`, `creditcard_contract()` |
+| `fraud_risk.data.validation` | `validate_dataframe()` → issues with stable `DQ0xx` codes and severities |
+| `fraud_risk.data.quality_report` | `build_quality_report()` → JSON report of issues + aggregate statistics |
+| `fraud_risk.cli.main` | `fraud-risk` CLI (`ingest`, `validate`, ...) |
 
 Later phases extend this table as modules are added.
 
@@ -44,7 +47,8 @@ FraudRiskError (FRAUD_RISK_ERROR)
 ├── DataError (DATA_ERROR)
 │   ├── DatasetNotFoundError (DATA_NOT_FOUND)
 │   ├── DataReadError (DATA_UNREADABLE)
-│   └── SchemaError (DATA_SCHEMA_INVALID, plus specific DATA_* codes)
+│   ├── SchemaError (DATA_SCHEMA_INVALID, plus specific DATA_* codes)
+│   └── DataValidationError (DATA_VALIDATION_FAILED)
 ├── ModelError (MODEL_ERROR)
 └── DependencyUnavailableError (DEPENDENCY_UNAVAILABLE)
 ```

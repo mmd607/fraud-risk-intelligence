@@ -47,7 +47,7 @@ fast with a `ConfigurationError` that names the variable but never echoes its va
 src/fraud_risk/        reusable package code (typed, py.typed marker)
   config/              settings
   core/                domain exceptions, structured logging
-  data/                schema, ingestion
+  data/                schema, ingestion, contracts, validation, quality report
   cli/                 `fraud-risk` command-line entry point
 tests/unit/            fast deterministic unit tests
 tests/integration/     cross-module tests on synthetic fixtures
@@ -64,6 +64,7 @@ Download `creditcard.csv` manually from Kaggle and place it at `data/raw/creditc
 
 ```bash
 fraud-risk ingest            # structural checks + aggregate metadata as JSON
+fraud-risk validate          # data contract validation -> reports/data_quality.json
 ```
 
 ## Data and artifacts
