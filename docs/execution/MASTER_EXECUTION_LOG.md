@@ -112,3 +112,26 @@ Dataset source: local `dataset.zip` containing `creditcard.csv` (150,828,752 byt
 - **Limitations:** single-split estimates with ~100 positives per evaluation partition; scores
   are uncalibrated (class weighting).
 - **Status:** TESTED → READY_FOR_REVIEW
+
+## Phase 05 — Advanced Imbalanced-Learning Models
+
+- **Implementation branch:** `phase/05-advanced-models` (base: `phase/test-04-baseline-model` @ `65553e4`)
+- **Test branch:** `phase/test-05-advanced-models` (base: `phase/05-advanced-models`)
+- **Implementation commit:** `6448e38` feat: add candidate model comparison with training-fold CV selection and optional boosters
+- **Test commit:** `aabbbc3` test: cover model comparison determinism, SMOTE isolation, and test-set discipline
+- **Files:** `src/fraud_risk/models/candidates.py`, `src/fraud_risk/training/experiments.py`, CLI
+  `compare-models`, extras `[boost]` (xgboost) / `[imbalance]` (imbalanced-learn),
+  `docs/model-comparison.md`, `tests/integration/test_model_comparison.py`,
+  `tests/unit/test_advanced_models_contract.py` + logger-reset fixture in `tests/conftest.py` (test branch)
+- **Commands and results (test branch):** `python -m pytest` → 243 passed; `ruff check .` → pass;
+  `ruff format --check .` → pass; `mypy src` → no issues in 27 files; `git diff --check` → clean.
+- **Test-branch notes:** one new test first failed because synthetic validation and test partitions
+  had equal sizes (test logic bug; fixed to compare row indices). A test-only conftest fixture now
+  resets package log handlers between tests (removed closed-stream logging noise). No product defect.
+- **Real-data run** (`fraud-risk compare-models`, 1 min 57 s, xgboost 3.4.1 and imbalanced-learn
+  0.14.2 installed): CV AP — LR 0.7362, RF 0.8253, **HGB 0.8430 (selected)**, XGBoost 0.8407,
+  LR+SMOTE 0.7474. Selected HGB on test (threshold 0.9037 from validation): **AP 0.8163**,
+  ROC-AUC 0.9696, precision 0.9730, recall 0.7500, F1 0.8471, confusion `[[56850, 2], [24, 72]]`.
+  Model id `hist_gradient_boosting-20261014t050441`.
+- **Limitations:** HGB and XGBoost are within CV noise of each other; single split; uncalibrated scores.
+- **Status:** TESTED → READY_FOR_REVIEW
