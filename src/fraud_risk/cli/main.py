@@ -71,7 +71,7 @@ def _cmd_split(args: argparse.Namespace, settings: Settings) -> dict[str, object
         group_duplicates=not args.no_group_duplicates,
     )
     splits = split_dataset(result.frame, config)
-    output: Path = args.output or settings.reports_dir / "split_metadata.json"
+    output: Path = args.metadata_output or settings.reports_dir / "split_metadata.json"
     splits.metadata.write_json(output)
     return {
         "status": "ok",
@@ -114,7 +114,11 @@ def build_parser() -> argparse.ArgumentParser:
     split.add_argument("--validation-size", type=float, default=0.2)
     split.add_argument("--no-group-duplicates", action="store_true")
     split.add_argument(
-        "--output", type=Path, default=None, help="Default: reports/split_metadata.json."
+        "--output",
+        dest="metadata_output",
+        type=Path,
+        default=None,
+        help="Split metadata path (default: reports/split_metadata.json).",
     )
     split.set_defaults(handler=_cmd_split)
     return parser
