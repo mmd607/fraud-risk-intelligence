@@ -1,5 +1,6 @@
 # --- Data: never commit datasets (Kaggle license + privacy) ---
-/data/
+data/
+!/src/fraud_risk/data/
 *.csv
 *.parquet
 *.zip
