@@ -3,8 +3,8 @@
 Each entry records a decision, its rationale, and the phase it was made in.
 
 ## D-001 — New repository location (Phase 00)
-The workspace `X:\ai projects` was not a Git repository and contained no prior fraud-risk work.
-A new repository was created at `X:\ai projects\fraud-risk-intelligence` with `git init -b main`
+The workspace was not a Git repository and contained no prior fraud-risk work.
+A new repository was created with `git init -b main`
 and a single empty root commit (`chore: initialize repository`) so phase branches have a common,
 reviewable base. `main` receives no further commits; `dev` was not created.
 
